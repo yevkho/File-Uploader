@@ -12,10 +12,12 @@ const db = require("./prisma/queries");
 
 // multer (uploads)
 const multer = require("multer");
+const fs = require("fs");
 // const upload = multer({ dest: "./public/uploads/" });
 
 // import routers
 const autRoutes = require("./routes/authRoutes");
+const { fileLoader } = require("ejs");
 
 // set up express
 const app = express();
@@ -25,7 +27,7 @@ const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 // Body parser middleware
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 // Session middleware
 app.use(
   session({
@@ -37,7 +39,7 @@ app.use(
     secret: "snow cats",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 10 * 60 * 1000 },
+    cookie: { maxAge: 30 * 60 * 1000 },
   })
 );
 app.use(passport.session());
@@ -50,51 +52,89 @@ app.use((req, res, next) => {
 // Serve static files (CSS, images, etc.)
 app.use(express.static("public"));
 
-// routers
-
-// AUTH
-// 1 authentication route
+// ROUTES
+// 1) AUTHENTICATION
 app.use("/", autRoutes);
 
-// FILES
-// 2 file upload route
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-
+// 2) FILES
+// save file to local memory first (TBD)
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+// save to local folder (TBD)
+app.post("/file", upload.single("file"), async (req, res) => {
+  const { originalname, buffer, size } = req.file;
+  const { folderId } = req.body;
+  console.log({ originalname, buffer, size, folderId });
 
-app.post("/file", upload.single("file"), (req, res) => {
-  console.log(req.file);
+  const folder = await db.findFolderById(folderId);
+  const folderPath = path.join(__dirname, folder.path);
+
+  // Ensure the folder exists
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+
+  // Save the file to the folder (pull it from local memory first)
+  const filePath = path.join(folderPath, originalname);
+  fs.writeFileSync(filePath, buffer);
+
+  // Save file details to the database
+  await db.addFile(originalname, filePath, size, folderId);
+
   res.redirect("/");
 });
 
-// FOLDERS
-// 3.1 folder form get
+// view file details
+app.get("/files/:fileId", async (req, res) => {
+  const { fileId } = req.params;
+  const file = await db.findFileById(fileId);
+
+  res.render("file.ejs", { file });
+});
+
+// download file
+app.get("/files/:fileId/download", async (req, res) => {
+  const { fileId } = req.params;
+  const file = await db.findFileById(fileId);
+
+  res.download(file.path);
+});
+
+// 3) FOLDERS
+// get folder form
 app.get("/folders/new", (req, res) => {
   res.render("newFolderForm.ejs");
 });
-// 3.2 folder form post
+// create folder (post)
 app.post("/folders/new", async (req, res) => {
+  const userId = req.user.id;
   const folderName = req.body.folder;
   const folderPath = "./folders/" + folderName;
   // add new user to users database
-  await db.addFolder(folderName, folderPath);
+  await db.addFolder(folderName, folderPath, userId);
   // redirect upon success
   res.redirect("/");
 });
+// view folder (and its files)
+app.get("/folders/:folderId", async (req, res) => {
+  const { folderId } = req.params;
+  console.log(folderId);
 
-// INDEX
-// 4 index route
+  const folder = await db.findFolderById(folderId);
+  const files = await db.getFilesByFolder(folderId);
+
+  res.render("folder.ejs", { folder, files });
+});
+
+// 4) INDEX
 app.get("/", async (req, res) => {
-  const folders = await db.getAllFolders();
-  console.log(folders);
+  let folders = [];
+  if (req.user) {
+    const userId = req.user.id;
+    folders = await db.getAllUserFolders(userId);
+  }
 
+  // const folders = await db.getAllUserFolders(userId);
   res.render("index.ejs", { folders });
 });
 

@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <title><%= file.name %> - Details</title>
+  </head>
+  <body>
+    <h1>File: <%= file.name %></h1>
+    <a href="/folders/<%= file.folderId %>">Back to Folder</a>
+
+    <p><strong>Name:</strong> <%= file.name %></p>
+    <p><strong>Size:</strong> <%= file.size %> bytes</p>
+    <p><strong>Uploaded At:</strong> <%= file.uploadedAt %></p>
+
+    <a href="/files/<%= file.id %>/download">Download File</a>
+  </body>
+</html>

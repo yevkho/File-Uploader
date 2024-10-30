@@ -11,8 +11,6 @@ async function addUser(username, email, hashedPassword) {
       password: hashedPassword,
     },
   });
-
-  console.log(user);
 }
 
 // 2) find user by name
@@ -23,7 +21,6 @@ async function findUserByName(username) {
     },
   });
 
-  console.log(user);
   return user;
 }
 
@@ -35,27 +32,66 @@ async function findUserById(userId) {
     },
   });
 
-  console.log(user);
   return user;
 }
 
 // 4) add folder
-async function addFolder(folderName, folderPath) {
+async function addFolder(folderName, folderPath, userId) {
   const folder = await prisma.folder.create({
     data: {
       name: folderName,
       path: folderPath,
+      userId: userId,
     },
   });
-
-  console.log(folder);
 }
 
 // 5) get all folder
 
-async function getAllFolders() {
-  const folders = await prisma.folder.findMany();
+async function getAllUserFolders(userId) {
+  const folders = await prisma.folder.findMany({
+    where: { userId: parseInt(userId) },
+  });
   return folders;
+}
+
+// 6) find folder by id (for multer configuration):
+async function findFolderById(folderId) {
+  const folder = await prisma.folder.findFirst({
+    where: { id: parseInt(folderId) },
+  });
+  return folder;
+}
+
+// 7) add new file metadata to db (call after a successful file upload)
+async function addFile(name, path, size, folderId) {
+  const file = await prisma.file.create({
+    data: {
+      name,
+      path,
+      size,
+      folder: { connect: { id: parseInt(folderId) } },
+    },
+  });
+  console.log(file);
+}
+
+// 8) get files in folder
+async function getFilesByFolder(folderId) {
+  const files = await prisma.file.findMany({
+    where: { folderId: parseInt(folderId) },
+  });
+  return files;
+}
+
+// 9) find file by id
+async function findFileById(fileId) {
+  const file = await prisma.file.findUnique({
+    where: {
+      id: parseInt(fileId),
+    },
+  });
+  return file;
 }
 
 module.exports = {
@@ -63,5 +99,9 @@ module.exports = {
   findUserByName,
   findUserById,
   addFolder,
-  getAllFolders,
+  getAllUserFolders,
+  findFolderById,
+  addFile,
+  getFilesByFolder,
+  findFileById,
 };

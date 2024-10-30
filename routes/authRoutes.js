@@ -37,11 +37,9 @@ authRouter.post("/signup", validateSignUp, async (req, res) => {
     });
   }
   // if successfully validated route
-  console.log(req.body);
   const { username, email, password } = req.body;
   // async hashing of password
   const hashedPassword = await bcrypt.hash(password, 10);
-  console.log(hashedPassword);
   // add new user to users database
   await db.addUser(username, email, hashedPassword);
   // redirect upon success

@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title><%= folder.name %> - Files</title>
+  </head>
+  <body>
+    <h1>Folder: <%= folder.name %></h1>
+    <a href="/">Back to Home</a>
+
+    <h3>Files</h3>
+    <% if (files.length > 0) { %>
+    <ul>
+      <% files.forEach((file) => { %>
+      <li>
+        <a href="/files/<%= file.id %>"><%= file.name %></a>
+      </li>
+      <% }) %>
+    </ul>
+    <% } else { %>
+    <p>No files in this folder.</p>
+    <% } %>
+  </body>
+</html>
