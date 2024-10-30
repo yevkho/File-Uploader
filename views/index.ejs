@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <title>File uploader</title>
+  </head>
+  <body>
+    <!-- Nav options -->
+    <% if (locals.currentUser) {%>
+    <h1>Welcome Back <%= currentUser.userName %></h1>
+    <a href="/logout">Log out</a>
+    <h3>File uploader</h3>
+    <form method="post" action="/file" enctype="multipart/form-data">
+      <div>
+        <label for="file">Choose file to upload</label>
+        <input type="file" id="file" name="file" />
+      </div>
+      <div>
+        <button>Submit</button>
+      </div>
+    </form>
+
+    <h3>Folders</h3>
+    <% if (locals.folders) {%> <% locals.folders.map((folder) => { %>
+    <div><a href="<%= folder.path%>"><%= folder.name%></a></div>
+    <%})%> <%}%>
+
+    <div>
+      <button onClick="location.href='/folders/new'">New Folder</button>
+    </div>
+
+    <% } else { %>
+    <div><a href="/signup">Sign Up</a></div>
+    <div><a href="/login">Log In</a></div>
+    <%}%>
+  </body>
+</html>
