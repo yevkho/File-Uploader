@@ -64,13 +64,15 @@ async function findFolderById(folderId) {
 }
 
 // 7) add new file metadata to db (call after a successful file upload)
-async function addFile(name, path, size, folderId) {
+async function addFile(name, path, size, folderId, content, url) {
   const file = await prisma.file.create({
     data: {
       name,
       path,
       size,
       folder: { connect: { id: parseInt(folderId) } },
+      content,
+      url,
     },
   });
   console.log(file);
@@ -94,6 +96,41 @@ async function findFileById(fileId) {
   return file;
 }
 
+// 10) create shared folder
+async function createSharedFolder(uuid, folderId, expiresAt) {
+  const sharedFolder = await prisma.sharedFolder.create({
+    data: {
+      uuid,
+      folderId: parseInt(folderId),
+      expiresAt,
+    },
+  });
+  return sharedFolder;
+}
+
+// 11) get sharedFolders
+async function getSharedLinksByFolderId(folderId) {
+  const sharedFolders = await prisma.sharedFolder.findMany({
+    where: {
+      folderId: parseInt(folderId),
+    },
+  });
+  return sharedFolders;
+}
+
+// 12) Get shared folder by UUID
+async function getSharedFolderByUUID(uuid) {
+  const sharedFolder = await prisma.sharedFolder.findUnique({
+    where: {
+      uuid,
+    },
+    include: {
+      folder: true,
+    },
+  });
+  return sharedFolder;
+}
+
 module.exports = {
   addUser,
   findUserByName,
@@ -104,4 +141,7 @@ module.exports = {
   addFile,
   getFilesByFolder,
   findFileById,
+  getSharedLinksByFolderId,
+  createSharedFolder,
+  getSharedFolderByUUID,
 };

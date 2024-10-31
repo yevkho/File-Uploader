@@ -39,6 +39,8 @@ model Folder {
   user   User @relation(fields: [userId], references: [id])
 
   files File[]
+
+  shared SharedFolder[]
 }
 
 model File {
@@ -49,6 +51,21 @@ model File {
   uploadedAt DateTime @default(now())
   folderId   Int?
   folder     Folder?  @relation(fields: [folderId], references: [id])
-
+  
   content    Bytes // Add this field to store the file content
+
+  url        String
+}
+
+
+model SharedFolder {
+  id            Int       @id @default(autoincrement())
+  uuid          String    @unique
+
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  
+  folderId      Int
+  folder        Folder    @relation(fields: [folderId], references: [id])
+  
 }

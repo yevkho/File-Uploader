@@ -18,5 +18,27 @@
     <% } else { %>
     <p>No files in this folder.</p>
     <% } %>
+
+    <!-- Share Folder form -->
+    <h3>Share this Folder</h3>
+    <form method="post" action="/folders/<%= folder.id %>/share">
+      <label for="duration">Share Duration:</label>
+      <input type="number" name="duration" id="duration" min="1" required />
+      days
+      <button type="submit">Generate Share Link</button>
+    </form>
+
+    <!-- Display existing share links if any -->
+    <% if (sharedFolders && sharedFolders.length > 0) { %>
+    <h4>Existing Share Links:</h4>
+    <ul>
+      <% sharedFolders.forEach((folder) => { %>
+      <li>
+        Link: <a href="/share/<%= folder.uuid %>"><%= folder.uuid %></a> -
+        Expires At: <%= folder.expiresAt %>
+      </li>
+      <% }); %>
+    </ul>
+    <% } %>
   </body>
 </html>
