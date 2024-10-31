@@ -38,6 +38,12 @@
       <button onClick="location.href='/folders/new'">New Folder</button>
     </div>
 
+    <h1>Upload Excel File</h1>
+    <form action="/upload-excel" method="POST" enctype="multipart/form-data">
+      <input type="file" name="excelFile" accept=".xlsx, .xls" required />
+      <button type="submit">Upload and Process</button>
+    </form>
+
     <% } else { %>
     <div><a href="/signup">Sign Up</a></div>
     <div><a href="/login">Log In</a></div>

@@ -13,6 +13,8 @@ const db = require("./prisma/queries");
 
 const { v4: uuidv4 } = require("uuid");
 
+const XLSX = require("xlsx");
+
 // multer (uploads)
 const multer = require("multer");
 const fs = require("fs");
@@ -34,7 +36,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 // Body parser middleware
 app.use(express.urlencoded({ extended: true }));
-// Session middleware
+// Session middleware (store it in the passportConfig file and import)
 app.use(
   session({
     store: new PrismaSessionStore(new PrismaClient(), {
@@ -281,6 +283,30 @@ app.get("/", async (req, res) => {
 
   // const folders = await db.getAllUserFolders(userId);
   res.render("index.ejs", { folders });
+});
+
+// 5) excel uplaods
+app.post("/upload-excel", upload.single("excelFile"), async (req, res) => {
+  try {
+    const fileBuffer = req.file.buffer;
+
+    // Read the Excel file from the buffer
+    const workbook = XLSX.read(fileBuffer, { type: "buffer" });
+    // Get the first sheet name
+    const sheetName = workbook.SheetNames[0];
+    // Get the worksheet
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Convert the worksheet to JSON
+    const data = XLSX.utils.sheet_to_json(worksheet);
+
+    // Print the data to the console
+    console.log("Excel Data:", data);
+    res.send("File processed successfully.");
+  } catch (error) {
+    console.error("Error processing file:", error);
+    res.status(500).send("An error occurred while processing the file.");
+  }
 });
 
 // error handler
