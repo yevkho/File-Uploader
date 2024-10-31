@@ -64,11 +64,10 @@ async function findFolderById(folderId) {
 }
 
 // 7) add new file metadata to db (call after a successful file upload)
-async function addFile(name, path, size, folderId, content, url) {
+async function addFile(name, size, folderId, content, url) {
   const file = await prisma.file.create({
     data: {
       name,
-      path,
       size,
       folder: { connect: { id: parseInt(folderId) } },
       content,
