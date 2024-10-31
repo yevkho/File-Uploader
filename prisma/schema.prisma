@@ -52,7 +52,7 @@ model File {
   folderId   Int?
   folder     Folder?  @relation(fields: [folderId], references: [id])
   
-  content    Bytes // Add this field to store the file content
+  content    Bytes? // Add this field to store the file content
 
   url        String
 }

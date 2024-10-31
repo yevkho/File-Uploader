@@ -78,19 +78,19 @@ app.post(
     const { originalname, buffer, size } = req.file;
     const { folderId } = req.body;
     const userId = req.user.id;
-    console.log({ originalname, buffer, size, folderId, userId });
+    // console.log({ originalname, buffer, size, folderId, userId });
 
     // Find the folder to get its name (optional)
     const folder = await db.findFolderById(folderId);
-    const folderPath = path.join(__dirname, folder.path);
+    // const folderPath = path.join(__dirname, folder.path);
 
     // Save the file to the local folder (pull it from local memory first) (optional)
     // Ensure the folder exists
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-    const filePath = path.join(folderPath, originalname);
-    fs.writeFileSync(filePath, buffer);
+    // if (!fs.existsSync(folderPath)) {
+    //   fs.mkdirSync(folderPath, { recursive: true });
+    // }
+    // const filePath = path.join(folderPath, originalname);
+    // fs.writeFileSync(filePath, buffer);
 
     // define path to save to cloud (supabase)
     const supabaseFilePath = `${folder.name}/${originalname}`;
@@ -116,7 +116,8 @@ app.post(
     console.log(publicURL);
 
     // Save file to the database (and its details) (optional)
-    await db.addFile(originalname, filePath, size, folderId, buffer, publicURL);
+    // await db.addFile(originalname, filePath, size, folderId, buffer, publicURL);
+    await db.addFile(originalname, size, folderId, buffer, publicURL);
 
     res.redirect("/");
   }
